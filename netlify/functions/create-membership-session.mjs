@@ -1,8 +1,8 @@
 const SUPABASE_URL = "https://cszqmwjkbbrhswdzgoop.supabase.co";
 const SUPABASE_KEY = "sb_publishable_waTH6kOiQPcctaK1SAeVlQ_hVHASK8w";
 const MEMBERSHIPS = Object.freeze({
-  plus: { name: "Pawluxe Plus", price: "price_1U5VfTP0o9BjdOwSfPqdLtT1" },
-  vip: { name: "Pawluxe VIP", price: "price_1U5VY9P0o9BjdOwS4Y6d5etF" },
+  plus: { name: "Pawluxe Plus", price: "price_1U5VY9P0o9BjdOwS4Y6d5etF" },
+  vip: { name: "Pawluxe VIP", price: "price_1U5VfTP0o9BjdOwSfPqdLtT1" },
 });
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {

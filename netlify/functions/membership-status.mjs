@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://cszqmwjkbbrhswdzgoop.supabase.co";
 const SUPABASE_KEY = "sb_publishable_waTH6kOiQPcctaK1SAeVlQ_hVHASK8w";
-const PLUS_PRICE = "price_1U5VfTP0o9BjdOwSfPqdLtT1";
-const VIP_PRICE = "price_1U5VY9P0o9BjdOwS4Y6d5etF";
+const PLUS_PRICE = "price_1U5VY9P0o9BjdOwS4Y6d5etF";
+const VIP_PRICE = "price_1U5VfTP0o9BjdOwSfPqdLtT1";
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8" } });
 
 export default async (request) => {
