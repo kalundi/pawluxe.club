@@ -11,6 +11,12 @@ export default async (request) => {
   const userResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` } });
   if (!userResponse.ok) return json({ error: "Your sign-in has expired." }, 401);
   const user = await userResponse.json();
+  const entitlementResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/member_entitlements?select=tier,is_test,expires_at&email=eq.${encodeURIComponent(user.email.toLowerCase())}&limit=1`,
+    { headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` } },
+  );
+  if (!entitlementResponse.ok) return json({ error: "Membership status is temporarily unavailable." }, 502);
+  const [entitlement] = await entitlementResponse.json();
   const stripeKey = Netlify.env.get("STRIPE_SECRET_KEY");
   const stripeGet = async (path) => {
     const response = await fetch(`https://api.stripe.com/v1/${path}`, { headers: { authorization: `Bearer ${stripeKey}` } });
@@ -19,7 +25,7 @@ export default async (request) => {
   };
   try {
     const customers = await stripeGet(`customers?email=${encodeURIComponent(user.email)}&limit=100`);
-    let tier = "free";
+    let tier = entitlement?.tier || "free";
     for (const customer of customers.data || []) {
       const subscriptions = await stripeGet(`subscriptions?customer=${encodeURIComponent(customer.id)}&status=all&limit=100`);
       for (const subscription of subscriptions.data || []) {
@@ -29,7 +35,7 @@ export default async (request) => {
         else if (prices.includes(PLUS_PRICE) && tier !== "vip") tier = "plus";
       }
     }
-    return json({ tier, discount: tier === "vip" ? 15 : tier === "plus" ? 10 : 0 });
+    return json({ tier, discount: tier === "vip" ? 15 : tier === "plus" ? 10 : 0, test: Boolean(entitlement?.is_test) });
   } catch (error) {
     console.error(error);
     return json({ error: "Membership status is temporarily unavailable." }, 502);

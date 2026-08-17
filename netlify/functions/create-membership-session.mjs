@@ -22,6 +22,14 @@ export default async (request) => {
   const user = await userResponse.json();
   if (!user.email) return json({ error: "A verified email address is required." }, 400);
 
+  const entitlementResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/member_entitlements?select=tier&email=eq.${encodeURIComponent(user.email.toLowerCase())}&limit=1`,
+    { headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` } },
+  );
+  if (!entitlementResponse.ok) return json({ error: "Membership could not be verified. Please try again." }, 502);
+  const [entitlement] = await entitlementResponse.json();
+  if (entitlement?.tier) return json({ error: `This account already has an active Pawluxe ${entitlement.tier === "vip" ? "VIP" : "Plus"} membership.` }, 409);
+
   const { tier } = await request.json().catch(() => ({}));
   const membership = MEMBERSHIPS[tier];
   if (!membership) return json({ error: "Unknown membership option." }, 400);

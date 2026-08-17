@@ -52,6 +52,13 @@ export default async (request) => {
     if (!userResponse.ok) return json({ error: "Your sign-in has expired. Please sign in again." }, 401);
     const user = await userResponse.json();
     authenticatedUser = user;
+    const entitlementResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/member_entitlements?select=tier&email=eq.${encodeURIComponent(user.email.toLowerCase())}&limit=1`,
+      { headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` } },
+    );
+    if (!entitlementResponse.ok) return json({ error: "Membership could not be verified. Please try again." }, 502);
+    const [entitlement] = await entitlementResponse.json();
+    membershipTier = entitlement?.tier || "free";
     const stripeGet = async (path) => {
       const response = await fetch(`https://api.stripe.com/v1/${path}`, { headers: { authorization: `Bearer ${stripeSecretKey}` } });
       if (!response.ok) throw new Error("Stripe membership lookup failed");
