@@ -152,7 +152,7 @@ async function refreshPawluxeAuth(){
   const {data}=await pawluxeSupabase.auth.getSession();pawluxeSession=data.session;
   const login=document.getElementById('loginNav'),chip=document.getElementById('userChip');
   if(pawluxeSession){const user=pawluxeSession.user,name=user.user_metadata?.full_name||user.email.split('@')[0];login.style.display='none';chip.style.display='inline-flex';document.getElementById('userNameChip').textContent=name;document.getElementById('accountName').textContent=name;showLoginView('account')}else{login.style.display='inline-block';chip.style.display='none';showLoginView('signin')}
-  await refreshMembership();
+  refreshMembership();
 }
 getPawluxeUser=function(){return pawluxeSession?.user||null};
 syncLoginUI=refreshPawluxeAuth;
@@ -205,7 +205,7 @@ else scheduleCartNudge();
 const membershipStatus=new URLSearchParams(location.search).get('membership');
 if(membershipStatus==='success')showToast('Membership activated! Your benefits are being verified.');
 else if(membershipStatus==='cancelled')showToast('Membership checkout cancelled.');
-pawluxeSupabase.auth.onAuthStateChange((_event,session)=>{pawluxeSession=session;setTimeout(refreshPawluxeAuth,0)});
+pawluxeSupabase.auth.onAuthStateChange((event,session)=>{pawluxeSession=session;if(event==='SIGNED_IN'){closeLogin();history.replaceState({},'',location.pathname+location.hash)}setTimeout(refreshPawluxeAuth,0)});
 refreshPawluxeAuth();
 window.addEventListener('DOMContentLoaded',refreshPawluxeAuth);
 </script>

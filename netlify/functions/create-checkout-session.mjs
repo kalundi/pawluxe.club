@@ -64,20 +64,22 @@ export default async (request) => {
       if (!response.ok) throw new Error("Stripe membership lookup failed");
       return response.json();
     };
-    try {
-      const customers = await stripeGet(`customers?email=${encodeURIComponent(user.email)}&limit=100`);
-      for (const customer of customers.data || []) {
-        const subscriptions = await stripeGet(`subscriptions?customer=${encodeURIComponent(customer.id)}&status=all&limit=100`);
-        for (const subscription of subscriptions.data || []) {
-          if (!["active", "trialing"].includes(subscription.status)) continue;
-          const prices = (subscription.items?.data || []).map(item => item.price?.id);
-          if (prices.includes(VIP_PRICE)) membershipTier = "vip";
-          else if (prices.includes(PLUS_PRICE) && membershipTier !== "vip") membershipTier = "plus";
+    if (!entitlement?.tier) {
+      try {
+        const customers = await stripeGet(`customers?email=${encodeURIComponent(user.email)}&limit=100`);
+        for (const customer of customers.data || []) {
+          const subscriptions = await stripeGet(`subscriptions?customer=${encodeURIComponent(customer.id)}&status=all&limit=100`);
+          for (const subscription of subscriptions.data || []) {
+            if (!["active", "trialing"].includes(subscription.status)) continue;
+            const prices = (subscription.items?.data || []).map(item => item.price?.id);
+            if (prices.includes(VIP_PRICE)) membershipTier = "vip";
+            else if (prices.includes(PLUS_PRICE) && membershipTier !== "vip") membershipTier = "plus";
+          }
         }
+      } catch (error) {
+        console.error(error);
+        return json({ error: "Membership could not be verified. Please try again." }, 502);
       }
-    } catch (error) {
-      console.error(error);
-      return json({ error: "Membership could not be verified. Please try again." }, 502);
     }
   }
   const discountPercent = membershipTier === "vip" ? 15 : membershipTier === "plus" ? 10 : 0;

@@ -17,6 +17,10 @@ export default async (request) => {
   );
   if (!entitlementResponse.ok) return json({ error: "Membership status is temporarily unavailable." }, 502);
   const [entitlement] = await entitlementResponse.json();
+  if (entitlement?.tier) {
+    const tier = entitlement.tier;
+    return json({ tier, discount: tier === "vip" ? 15 : 10, test: Boolean(entitlement.is_test) });
+  }
   const stripeKey = Netlify.env.get("STRIPE_SECRET_KEY");
   const stripeGet = async (path) => {
     const response = await fetch(`https://api.stripe.com/v1/${path}`, { headers: { authorization: `Bearer ${stripeKey}` } });
