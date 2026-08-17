@@ -11,6 +11,19 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), {
 });
 
 export default async (request) => {
+  const stripeSecretKey = Netlify.env.get("STRIPE_SECRET_KEY");
+  if (!stripeSecretKey) return json({ error: "Membership checkout is not configured." }, 503);
+  if (request.method === "GET") {
+    const prices = await Promise.all(Object.entries(MEMBERSHIPS).map(async ([tier, membership]) => {
+      const response = await fetch(`https://api.stripe.com/v1/prices/${membership.price}`, {
+        headers: { authorization: `Bearer ${stripeSecretKey}` },
+      });
+      const price = await response.json();
+      if (!response.ok) throw new Error(`Stripe could not retrieve ${tier} pricing.`);
+      return { tier, name: membership.name, priceId: membership.price, currency: price.currency, unitAmount: price.unit_amount, recurring: price.recurring?.interval || null, product: price.product };
+    }));
+    return json({ prices });
+  }
   if (request.method !== "POST") return json({ error: "Method not allowed." }, 405);
   const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   if (!token) return json({ error: "Please sign in before choosing a paid membership." }, 401);
@@ -37,8 +50,6 @@ export default async (request) => {
   }
   const isUpgrade = entitlement?.tier === "plus" && tier === "vip";
 
-  const stripeSecretKey = Netlify.env.get("STRIPE_SECRET_KEY");
-  if (!stripeSecretKey) return json({ error: "Membership checkout is not configured." }, 503);
   const origin = new URL(request.url).origin;
   const body = new URLSearchParams({
     mode: "subscription",
