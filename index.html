@@ -56,6 +56,9 @@ main>section:not(.hero){position:relative}.sectionBackToHero{position:absolute;r
 <style>
 .cartNudge{position:fixed;left:22px;bottom:22px;z-index:72;width:min(350px,calc(100vw - 44px));display:flex;align-items:center;gap:13px;padding:15px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 42px rgba(47,31,24,.2);opacity:0;visibility:hidden;transform:translateY(18px);transition:.25s}.cartNudge.show{opacity:1;visibility:visible;transform:none}.cartNudgeIcon{width:42px;height:42px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;background:var(--sand);font-size:21px}.cartNudgeCopy{min-width:0;flex:1}.cartNudgeCopy strong{display:block;font-family:Georgia,serif;font-size:17px}.cartNudgeCopy span{display:block;margin-top:3px;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cartNudgeOpen,.cartNudgeClose{border:0;cursor:pointer}.cartNudgeOpen{background:var(--espresso);color:#fff;border-radius:999px;padding:9px 12px;font-size:12px;font-weight:850}.cartNudgeClose{align-self:flex-start;background:transparent;color:var(--muted);padding:1px;font-size:19px;line-height:1}@media(max-width:620px){.cartNudge{left:14px;bottom:68px;width:calc(100vw - 28px);padding:13px}.cartNudgeOpen{padding:8px 10px}}
 </style>
+<style>
+.plan.activeMembership{outline:3px solid #58a66a;box-shadow:0 16px 38px rgba(46,111,62,.2)}.memberBadge{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 10px;border-radius:999px;background:#edf8ef;color:#2e6f3e;font-size:12px;font-weight:900}.membershipSavings{color:#2e6f3e;font-weight:850}.loginForm #loginPassword,.loginForm #createPassword{display:none}
+</style>
 </head>
 <body>
 <header class="topbar"><div class="navwrap"><a class="brand" href="#top">Paw<span>luxe</span>.club 🐾</a><nav class="nav"><a class="hideMobile" href="#services">Services</a><a class="hideMobile" href="#mypawluxe">My PawLuxe</a><a class="hideMobile" href="#shop">Shop</a><button onclick="openCart()">Cart <span id="cartCount" class="cartBadge">0</span></button><button id="loginNav" class="loginBtn" onclick="openLogin()">Login</button><button id="userChip" class="userChip" onclick="openLogin()">🐾 <span id="userNameChip">My Account</span></button><a class="cta" href="#book">Book Care</a></nav></div></header>
@@ -133,7 +136,38 @@ let cart=JSON.parse(localStorage.getItem('pawluxeCart')||'[]');function saveCart
 function saveProfile(){const p={name:document.getElementById('profileName').value.trim(),breed:document.getElementById('profileBreed').value.trim(),age:document.getElementById('profileAge').value.trim(),fav:document.getElementById('profileFavorite').value.trim(),notes:document.getElementById('profileNotes').value.trim(),points:Number(localStorage.getItem('pawluxePoints')||25)};localStorage.setItem('pawluxeProfile',JSON.stringify(p));localStorage.setItem('pawluxePoints',p.points);loadProfile();showToast('Pet profile saved')}function loadProfile(){const p=JSON.parse(localStorage.getItem('pawluxeProfile')||'null');if(!p)return;document.getElementById('profileName').value=p.name||'';document.getElementById('profileBreed').value=p.breed||'';document.getElementById('profileAge').value=p.age||'';document.getElementById('profileFavorite').value=p.fav||'';document.getElementById('profileNotes').value=p.notes||'';document.getElementById('petDisplayName').textContent=p.name||'Your Pet';document.getElementById('petDisplayMeta').textContent=[p.breed,p.age?('Age '+p.age):'',p.fav?('Favorite: '+p.fav):''].filter(Boolean).join(' • ')||'Profile saved';document.getElementById('pointCount').textContent=p.points||0;document.getElementById('petName').value=p.name||''}loadProfile();renderCart();
 document.getElementById('pawluxeBookingForm').addEventListener('submit',function(e){if(!requestDate.value||!requestTime.value){e.preventDefault();alert('Please select an available booking date and time.');return}if(location.protocol==='file:'){e.preventDefault();const service=document.getElementById('serviceNeeded').value,name=document.getElementById('customerName').value,email=document.getElementById('customerEmail').value,phone=document.getElementById('customerPhone').value,pet=document.getElementById('petName').value,breed=document.getElementById('petBreed').value,details=document.getElementById('petDetails').value,body=`New Pawluxe Booking Request\n\nCustomer Name: ${name}\nCustomer Email: ${email}\nPhone: ${phone}\nService: ${service}\nPet: ${pet||'Not provided'}\nBreed/Type: ${breed}\nDate: ${requestDate.value}\nTime: ${requestTime.value}\n\nDetails:\n${details||'None'}`;location.href='mailto:contact@pawluxe.club?subject='+encodeURIComponent('New Pawluxe Booking Request - '+service)+'&body='+encodeURIComponent(body)}});
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.min.js"></script>
 <script>
+const pawluxeSupabase=window.supabase.createClient('https://cszqmwjkbbrhswdzgoop.supabase.co','sb_publishable_waTH6kOiQPcctaK1SAeVlQ_hVHASK8w',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let pawluxeSession=null;
+let verifiedMembership={tier:'free',discount:0};
+function membershipLabel(tier){return tier==='vip'?'Pawluxe VIP':tier==='plus'?'Pawluxe Plus':'Free Member'}
+async function refreshMembership(){
+  if(!pawluxeSession){verifiedMembership={tier:'free',discount:0};renderCart();highlightMembership();return}
+  try{const response=await fetch('/api/membership-status',{headers:{Authorization:'Bearer '+pawluxeSession.access_token}});if(response.ok)verifiedMembership=await response.json()}catch(error){console.warn('Membership status unavailable')}
+  renderCart();highlightMembership();
+}
+function highlightMembership(){document.querySelectorAll('#membership .plan').forEach((plan,index)=>{const tier=index===2?'vip':index===1?'plus':'free';plan.classList.toggle('activeMembership',tier===verifiedMembership.tier);let badge=plan.querySelector('.memberBadge');if(tier===verifiedMembership.tier&&!badge){badge=document.createElement('div');badge.className='memberBadge';badge.textContent='✓ Your current membership';plan.insertBefore(badge,plan.querySelector('button'))}else if(tier!==verifiedMembership.tier&&badge)badge.remove()})}
+async function refreshPawluxeAuth(){
+  const {data}=await pawluxeSupabase.auth.getSession();pawluxeSession=data.session;
+  const login=document.getElementById('loginNav'),chip=document.getElementById('userChip');
+  if(pawluxeSession){const user=pawluxeSession.user,name=user.user_metadata?.full_name||user.email.split('@')[0];login.style.display='none';chip.style.display='inline-flex';document.getElementById('userNameChip').textContent=name;document.getElementById('accountName').textContent=name;showLoginView('account')}else{login.style.display='inline-block';chip.style.display='none';showLoginView('signin')}
+  await refreshMembership();
+}
+getPawluxeUser=function(){return pawluxeSession?.user||null};
+syncLoginUI=refreshPawluxeAuth;
+demoLogin=async function(e){e.preventDefault();const email=document.getElementById('loginEmail').value.trim();const {error}=await pawluxeSupabase.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+'/?auth=complete'}});if(error){showToast(error.message);return}showToast('Check your email for your secure sign-in link.');closeLogin()};
+demoCreate=async function(e){e.preventDefault();const name=document.getElementById('createName').value.trim();const email=document.getElementById('createEmail').value.trim();const {error}=await pawluxeSupabase.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+'/?auth=complete',data:{full_name:name}}});if(error){showToast(error.message);return}showToast('Check your email to finish creating your account.');closeLogin()};
+logoutPawluxe=async function(){await pawluxeSupabase.auth.signOut();pawluxeSession=null;verifiedMembership={tier:'free',discount:0};await refreshPawluxeAuth();showToast('Signed out of Pawluxe.')};
+async function startMembership(tier){
+  if(!pawluxeSession){openLogin();showToast('Sign in to choose a membership.');return}
+  try{const response=await fetch('/api/create-membership-session',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+pawluxeSession.access_token},body:JSON.stringify({tier})});const result=await response.json();if(!response.ok||!result.url)throw new Error(result.error||'Unable to start membership checkout.');location.assign(result.url)}catch(error){showToast(error.message)}
+}
+document.querySelectorAll('#membership .plan').forEach((plan,index)=>{const button=plan.querySelector('button');button.onclick=index===0?()=>openLogin():()=>startMembership(index===1?'plus':'vip')});
+['loginPassword','createPassword'].forEach(id=>{const input=document.getElementById(id);if(input){input.required=false;if(input.previousElementSibling)input.previousElementSibling.style.display='none'}});
+const loginNote=document.querySelector('.loginNote');if(loginNote)loginNote.textContent='Secure passwordless sign-in: we will email you a one-time link to access your Pawluxe account.';
+const originalRenderCart=renderCart;
+renderCart=function(){originalRenderCart();const subtotal=cart.reduce((sum,item)=>sum+item.price,0),discount=subtotal*(verifiedMembership.discount/100),total=subtotal-discount,totalBox=document.querySelector('.drawerPanel .total');if(!totalBox)return;totalBox.innerHTML='<div><span>Subtotal</span>'+(verifiedMembership.discount?'<div class="membershipSavings">'+membershipLabel(verifiedMembership.tier)+' · '+verifiedMembership.discount+'% off</div>':'')+'</div><div style="text-align:right"><span>$'+subtotal.toFixed(2)+'</span>'+(discount?'<div class="membershipSavings">−$'+discount.toFixed(2)+'</div>':'')+'<strong id="cartTotal" style="display:block;margin-top:5px">$'+total.toFixed(2)+'</strong></div>'};
 checkout=async function(){
   if(!cart.length){showToast('Your cart is empty');return}
   const checkoutButton=document.querySelector('.drawerPanel .btn.gold');
@@ -141,7 +175,8 @@ checkout=async function(){
   checkoutButton.disabled=true;
   checkoutButton.textContent='Opening secure checkout…';
   try{
-    const response=await fetch('/api/create-checkout-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cart:cart.map(item=>({name:item.name}))})});
+    const headers={'Content-Type':'application/json'};if(pawluxeSession)headers.Authorization='Bearer '+pawluxeSession.access_token;
+    const response=await fetch('/api/create-checkout-session',{method:'POST',headers,body:JSON.stringify({cart:cart.map(item=>({name:item.name}))})});
     const result=await response.json();
     if(!response.ok||!result.url)throw new Error(result.error||'Unable to start checkout.');
     window.location.assign(result.url);
@@ -167,5 +202,11 @@ const checkoutStatus=new URLSearchParams(location.search).get('checkout');
 if(checkoutStatus==='success'){cart=[];saveCart();showToast('Payment completed. Thank you!')}
 else if(checkoutStatus==='cancelled'){showToast('Checkout cancelled—your cart is still saved.')}
 else scheduleCartNudge();
+const membershipStatus=new URLSearchParams(location.search).get('membership');
+if(membershipStatus==='success')showToast('Membership activated! Your benefits are being verified.');
+else if(membershipStatus==='cancelled')showToast('Membership checkout cancelled.');
+pawluxeSupabase.auth.onAuthStateChange((_event,session)=>{pawluxeSession=session;setTimeout(refreshPawluxeAuth,0)});
+refreshPawluxeAuth();
+window.addEventListener('DOMContentLoaded',refreshPawluxeAuth);
 </script>
 </body></html>

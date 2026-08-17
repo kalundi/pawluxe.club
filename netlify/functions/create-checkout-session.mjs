@@ -3,6 +3,10 @@ const PRODUCTS = Object.freeze({
   "Playtime Toy Pack": 1899,
   "Pawluxe Monthly Box": 2299,
 });
+const SUPABASE_URL = "https://cszqmwjkbbrhswdzgoop.supabase.co";
+const SUPABASE_KEY = "sb_publishable_waTH6kOiQPcctaK1SAeVlQ_hVHASK8w";
+const PLUS_PRICE = "price_1U5VfTP0o9BjdOwSfPqdLtT1";
+const VIP_PRICE = "price_1U5VY9P0o9BjdOwS4Y6d5etF";
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -40,6 +44,37 @@ export default async (request) => {
     quantities.set(item.name, (quantities.get(item.name) || 0) + 1);
   }
 
+  let membershipTier = "free";
+  let authenticatedUser = null;
+  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  if (token) {
+    const userResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` } });
+    if (!userResponse.ok) return json({ error: "Your sign-in has expired. Please sign in again." }, 401);
+    const user = await userResponse.json();
+    authenticatedUser = user;
+    const stripeGet = async (path) => {
+      const response = await fetch(`https://api.stripe.com/v1/${path}`, { headers: { authorization: `Bearer ${stripeSecretKey}` } });
+      if (!response.ok) throw new Error("Stripe membership lookup failed");
+      return response.json();
+    };
+    try {
+      const customers = await stripeGet(`customers?email=${encodeURIComponent(user.email)}&limit=100`);
+      for (const customer of customers.data || []) {
+        const subscriptions = await stripeGet(`subscriptions?customer=${encodeURIComponent(customer.id)}&status=all&limit=100`);
+        for (const subscription of subscriptions.data || []) {
+          if (!["active", "trialing"].includes(subscription.status)) continue;
+          const prices = (subscription.items?.data || []).map(item => item.price?.id);
+          if (prices.includes(VIP_PRICE)) membershipTier = "vip";
+          else if (prices.includes(PLUS_PRICE) && membershipTier !== "vip") membershipTier = "plus";
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      return json({ error: "Membership could not be verified. Please try again." }, 502);
+    }
+  }
+  const discountPercent = membershipTier === "vip" ? 15 : membershipTier === "plus" ? 10 : 0;
+
   const stripeBody = new URLSearchParams({
     mode: "payment",
     success_url: `${new URL(request.url).origin}/?checkout=success`,
@@ -50,10 +85,15 @@ export default async (request) => {
 
   [...quantities.entries()].forEach(([name, quantity], index) => {
     stripeBody.set(`line_items[${index}][price_data][currency]`, "usd");
-    stripeBody.set(`line_items[${index}][price_data][unit_amount]`, String(PRODUCTS[name]));
+    stripeBody.set(`line_items[${index}][price_data][unit_amount]`, String(Math.round(PRODUCTS[name] * (1 - discountPercent / 100))));
     stripeBody.set(`line_items[${index}][price_data][product_data][name]`, name);
+    if (discountPercent) stripeBody.set(`line_items[${index}][price_data][product_data][description]`, `${discountPercent}% ${membershipTier === "vip" ? "VIP" : "Plus"} member discount applied`);
     stripeBody.set(`line_items[${index}][quantity]`, String(quantity));
   });
+  stripeBody.set("metadata[membership_tier]", membershipTier);
+  stripeBody.set("metadata[discount_percent]", String(discountPercent));
+  if (authenticatedUser?.email) stripeBody.set("customer_email", authenticatedUser.email);
+  if (authenticatedUser?.id) stripeBody.set("metadata[supabase_user_id]", authenticatedUser.id);
 
   try {
     const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
