@@ -83,6 +83,20 @@ export default async (request) => {
     }
   }
   const discountPercent = membershipTier === "vip" ? 15 : membershipTier === "plus" ? 10 : 0;
+  const redeemPoints = Number(payload.redeemPoints || 0);
+  if (!Number.isInteger(redeemPoints) || redeemPoints < 0 || redeemPoints % 1000 !== 0) {
+    return json({ error: "Rewards must be redeemed in 1,000-point blocks." }, 400);
+  }
+  if (redeemPoints && !authenticatedUser) {
+    return json({ error: "Sign in to redeem Pawluxe Points." }, 401);
+  }
+  const discountedSubtotal = [...quantities.entries()].reduce(
+    (sum, [name, quantity]) => sum + Math.round(PRODUCTS[name] * (1 - discountPercent / 100)) * quantity,
+    0,
+  );
+  if (redeemPoints / 100 * 100 > discountedSubtotal) {
+    return json({ error: "The selected reward is greater than this order total." }, 400);
+  }
 
   const stripeBody = new URLSearchParams({
     mode: "payment",
@@ -103,8 +117,34 @@ export default async (request) => {
   stripeBody.set("metadata[discount_percent]", String(discountPercent));
   if (authenticatedUser?.email) stripeBody.set("customer_email", authenticatedUser.email);
   if (authenticatedUser?.id) stripeBody.set("metadata[supabase_user_id]", authenticatedUser.id);
+  if (redeemPoints) stripeBody.set("metadata[reward_points]", String(redeemPoints));
 
   try {
+    if (redeemPoints) {
+      const summaryResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_my_reward_summary`, {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}`, "content-type": "application/json" },
+        body: "{}",
+      });
+      const [summary] = await summaryResponse.json();
+      if (!summaryResponse.ok || Number(summary?.balance || 0) < redeemPoints) {
+        return json({ error: "You do not have enough available Pawluxe Points." }, 400);
+      }
+      const couponBody = new URLSearchParams({
+        amount_off: String(redeemPoints),
+        currency: "usd",
+        duration: "once",
+        name: `Pawluxe Rewards: ${redeemPoints.toLocaleString()} points`,
+      });
+      const couponResponse = await fetch("https://api.stripe.com/v1/coupons", {
+        method: "POST",
+        headers: { authorization: `Bearer ${stripeSecretKey}`, "content-type": "application/x-www-form-urlencoded" },
+        body: couponBody,
+      });
+      const coupon = await couponResponse.json();
+      if (!couponResponse.ok || !coupon.id) return json({ error: "The rewards discount could not be created." }, 502);
+      stripeBody.set("discounts[0][coupon]", coupon.id);
+    }
     const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
       headers: {
@@ -118,6 +158,20 @@ export default async (request) => {
     if (!stripeResponse.ok || !session.url) {
       console.error("Stripe Checkout Session error", session?.error?.message || session);
       return json({ error: "Stripe could not start checkout. Please try again." }, 502);
+    }
+    if (redeemPoints) {
+      const reserveResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/reserve_reward_redemption`, {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}`, "content-type": "application/json" },
+        body: JSON.stringify({ p_session_id: session.id, p_points: redeemPoints }),
+      });
+      if (!reserveResponse.ok) {
+        await fetch(`https://api.stripe.com/v1/checkout/sessions/${session.id}/expire`, {
+          method: "POST",
+          headers: { authorization: `Bearer ${stripeSecretKey}` },
+        });
+        return json({ error: "Those Pawluxe Points are no longer available. Refresh and try again." }, 409);
+      }
     }
 
     return json({ url: session.url });
