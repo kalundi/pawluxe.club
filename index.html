@@ -53,6 +53,9 @@
 <style>
 main>section:not(.hero){position:relative}.sectionBackToHero{position:absolute;right:24px;bottom:18px;width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--espresso);box-shadow:0 8px 22px rgba(47,31,24,.12);transition:.2s;z-index:5}.sectionBackToHero:hover{background:var(--espresso);border-color:var(--espresso);color:#fff;transform:translateY(-3px)}.sectionBackToHero:focus-visible{outline:3px solid var(--gold2);outline-offset:3px}.sectionBackToHero svg{width:19px;height:19px;fill:currentColor}@media(max-width:620px){.sectionBackToHero{right:14px;bottom:10px;width:38px;height:38px}}
 </style>
+<style>
+.cartNudge{position:fixed;left:22px;bottom:22px;z-index:72;width:min(350px,calc(100vw - 44px));display:flex;align-items:center;gap:13px;padding:15px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 42px rgba(47,31,24,.2);opacity:0;visibility:hidden;transform:translateY(18px);transition:.25s}.cartNudge.show{opacity:1;visibility:visible;transform:none}.cartNudgeIcon{width:42px;height:42px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;background:var(--sand);font-size:21px}.cartNudgeCopy{min-width:0;flex:1}.cartNudgeCopy strong{display:block;font-family:Georgia,serif;font-size:17px}.cartNudgeCopy span{display:block;margin-top:3px;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cartNudgeOpen,.cartNudgeClose{border:0;cursor:pointer}.cartNudgeOpen{background:var(--espresso);color:#fff;border-radius:999px;padding:9px 12px;font-size:12px;font-weight:850}.cartNudgeClose{align-self:flex-start;background:transparent;color:var(--muted);padding:1px;font-size:19px;line-height:1}@media(max-width:620px){.cartNudge{left:14px;bottom:68px;width:calc(100vw - 28px);padding:13px}.cartNudgeOpen{padding:8px 10px}}
+</style>
 </head>
 <body>
 <header class="topbar"><div class="navwrap"><a class="brand" href="#top">Paw<span>luxe</span>.club 🐾</a><nav class="nav"><a class="hideMobile" href="#services">Services</a><a class="hideMobile" href="#mypawluxe">My PawLuxe</a><a class="hideMobile" href="#shop">Shop</a><button onclick="openCart()">Cart <span id="cartCount" class="cartBadge">0</span></button><button id="loginNav" class="loginBtn" onclick="openLogin()">Login</button><button id="userChip" class="userChip" onclick="openLogin()">🐾 <span id="userNameChip">My Account</span></button><a class="cta" href="#book">Book Care</a></nav></div></header>
@@ -82,7 +85,8 @@ main>section:not(.hero){position:relative}.sectionBackToHero{position:absolute;r
 <div><h2 class="footerHeading">Follow</h2><p class="footerTagline">Stay connected for pet-care tips, Pawluxe news, and happy-pet moments.</p><div class="socialLinks"><a class="socialLink" href="https://www.instagram.com/pawluxe.club/" target="_blank" rel="noopener noreferrer" aria-label="Follow Pawluxe Club on Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm10.5 1.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg></a><a class="socialLink" href="https://www.facebook.com/profile.php?id=61586214790531" target="_blank" rel="noopener noreferrer" aria-label="Follow Pawluxe Club on Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4h-3c-3.3 0-5 2-5 5v2H6v4h3v9h4v-9h3.5l.5-4h-4V9c0-.7.3-1 1-1Z"/></svg></a><a class="socialLink" href="https://www.tiktok.com/@pawluxe.club" target="_blank" rel="noopener noreferrer" aria-label="Follow Pawluxe Club on TikTok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3c.4 2.2 1.7 3.6 4 4v3c-1.5 0-2.8-.4-4-1.2V16a6 6 0 1 1-6-6h1v3a3 3 0 1 0 2 3V3h3Z"/></svg></a></div></div>
 </div><div class="footerBottom"><span>© 2026 Pawluxe.club. All rights reserved.</span><span><a href="mailto:contact@pawluxe.club?subject=Privacy%20question">Privacy</a> · <a href="mailto:contact@pawluxe.club?subject=Website%20support">Website support</a></span></div></footer>
 <div id="toast" class="toast">Added to cart</div>
-<div id="cartDrawer" class="drawer"><div class="overlay" onclick="closeCart()"></div><aside class="drawerPanel"><div class="drawerHead"><h2 style="font-family:Georgia,serif">Your Pawluxe Cart</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div class="total"><span>Total</span><span id="cartTotal">$0.00</span></div><button class="btn gold" style="width:100%" onclick="checkout()">Continue to Checkout</button><p style="color:var(--muted);font-size:13px;line-height:1.5">Preview checkout only. Real card, Apple Pay, and Google Pay payments require a connected payment processor such as Stripe.</p></aside></div>
+<div id="cartDrawer" class="drawer"><div class="overlay" onclick="closeCart()"></div><aside class="drawerPanel"><div class="drawerHead"><h2 style="font-family:Georgia,serif">Your Pawluxe Cart</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div class="total"><span>Total</span><span id="cartTotal">$0.00</span></div><button class="btn gold" style="width:100%" onclick="checkout()">Continue to Checkout</button><p style="color:var(--muted);font-size:13px;line-height:1.5">Secure payment is processed by Stripe. Available payment methods are shown at checkout.</p></aside></div>
+<aside id="cartNudge" class="cartNudge" aria-live="polite" aria-label="Cart reminder"><div class="cartNudgeIcon">🛍️</div><div class="cartNudgeCopy"><strong>Your cart is waiting</strong><span id="cartNudgeText">Your Pawluxe picks are saved.</span></div><button class="cartNudgeOpen" type="button" onclick="openCartFromNudge()">View cart</button><button class="cartNudgeClose" type="button" onclick="dismissCartNudge()" aria-label="Dismiss cart reminder">×</button></aside>
 
 <div id="loginOverlay" class="loginOverlay" aria-hidden="true">
   <div class="loginTop"><a class="brand" href="#" onclick="closeLogin();return false;">Paw<span>luxe</span>.club 🐾</a><button class="loginBack" onclick="closeLogin()">← Back to PawLuxe</button></div>
@@ -147,8 +151,21 @@ checkout=async function(){
     checkoutButton.textContent=originalLabel;
   }
 };
+let cartNudgeTimer;
+function hideCartNudge(){document.getElementById('cartNudge').classList.remove('show')}
+function scheduleCartNudge(delay=12000){clearTimeout(cartNudgeTimer);hideCartNudge();if(!cart.length)return;cartNudgeTimer=setTimeout(()=>{if(cart.length&&!document.getElementById('cartDrawer').classList.contains('open')){const total=cart.reduce((sum,item)=>sum+item.price,0);document.getElementById('cartNudgeText').textContent=cart.length+' item'+(cart.length===1?'':'s')+' · $'+total.toFixed(2)+' saved for you';document.getElementById('cartNudge').classList.add('show')}},delay)}
+function dismissCartNudge(){hideCartNudge();scheduleCartNudge(60000)}
+function openCartFromNudge(){hideCartNudge();openCart()}
+const originalAddToCart=addToCart;
+addToCart=function(name,price,emoji){originalAddToCart(name,price,emoji);scheduleCartNudge()};
+const originalOpenCart=openCart;
+openCart=function(){hideCartNudge();originalOpenCart()};
+const originalCloseCart=closeCart;
+closeCart=function(){originalCloseCart();scheduleCartNudge(20000)};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&cart.length)scheduleCartNudge(2500)});
 const checkoutStatus=new URLSearchParams(location.search).get('checkout');
 if(checkoutStatus==='success'){cart=[];saveCart();showToast('Payment completed. Thank you!')}
 else if(checkoutStatus==='cancelled'){showToast('Checkout cancelled—your cart is still saved.')}
+else scheduleCartNudge();
 </script>
 </body></html>
