@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 const SUPABASE_URL = "https://cszqmwjkbbrhswdzgoop.supabase.co";
 const OWNER_EMAIL = "contact@pawluxe.club";
+const OWNER_PHONE = "+13015007946";
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
 }[character]));
@@ -79,13 +80,33 @@ async function handlePaidBooking(bookingId, session, supabaseSecret) {
     booking.sms_consent
       ? sendSms(booking.customer_phone, `Pawluxe: Thank you, ${booking.customer_name}! We received your ${booking.service} request for ${booking.requested_date} at ${booking.requested_time}. Your $${fee} reservation fee was paid. We’ll contact you to confirm. Reply STOP to opt out.`)
       : Promise.resolve(false),
-    Netlify.env.get("PAWLUXE_ALERT_PHONE")
-      ? sendSms(Netlify.env.get("PAWLUXE_ALERT_PHONE"), `New paid Pawluxe request: ${details}. Customer: ${booking.customer_name}, ${booking.customer_phone}.`)
-      : Promise.resolve(false),
+    sendSms(Netlify.env.get("PAWLUXE_ALERT_PHONE") || OWNER_PHONE, `New paid Pawluxe request: ${details}. Customer: ${booking.customer_name}, ${booking.customer_phone}.`),
   ]);
   await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${booking.id}`, {
     method: "PATCH", headers, body: JSON.stringify({ notifications_sent_at: new Date().toISOString() }),
   });
+}
+
+async function handleCommerceNotification(session) {
+  const sendgridKey = Netlify.env.get("SENDGRID_API_KEY");
+  const email = session.customer_details?.email || session.customer_email;
+  if (!email) throw new Error("Checkout customer email was not provided");
+  const phone = session.customer_details?.phone;
+  const amount = Number(session.amount_total || 0) / 100;
+  const isMembership = session.mode === "subscription" && session.metadata?.membership_tier;
+  const label = isMembership
+    ? `Pawluxe ${session.metadata.membership_tier === "vip" ? "VIP" : "Plus"} membership`
+    : session.metadata?.order_summary || "Pawluxe shop order";
+  const action = isMembership ? (session.metadata.membership_change === "upgrade" ? "membership upgrade" : "new membership") : "shop order";
+  const safeLabel = escapeHtml(label);
+  await Promise.all([
+    sendEmail(sendgridKey, email, `Pawluxe confirmation — ${label}`,
+      `<h2>Thank you for your ${escapeHtml(action)}</h2><p>We received your payment for <strong>${safeLabel}</strong>.</p><p><strong>Total paid:</strong> $${amount.toFixed(2)}</p><p>If anything requires confirmation, the Pawluxe team will contact you. Questions? Reply to this email or call 301-500-7946.</p>`),
+    sendEmail(sendgridKey, OWNER_EMAIL, `New Pawluxe ${action} — ${label}`,
+      `<h2>New ${escapeHtml(action)}</h2><p><strong>Customer:</strong> ${escapeHtml(email)}${phone ? `<br><strong>Phone:</strong> ${escapeHtml(phone)}` : ""}</p><p><strong>Details:</strong> ${safeLabel}<br><strong>Total paid:</strong> $${amount.toFixed(2)}</p>`, email),
+    sendSms(Netlify.env.get("PAWLUXE_ALERT_PHONE") || OWNER_PHONE,
+      `New Pawluxe ${action}: ${label}. Customer: ${email}${phone ? `, ${phone}` : ""}. Paid $${amount.toFixed(2)}.`),
+  ]);
 }
 
 export default async (request) => {
@@ -108,6 +129,15 @@ export default async (request) => {
       return json({ error: "Booking processing failed." }, 500);
     }
     return json({ received: true });
+  }
+  if (event.type === "checkout.session.completed"
+    && (session?.metadata?.purpose === "product_order" || (session?.mode === "subscription" && session?.metadata?.membership_tier))) {
+    try {
+      await handleCommerceNotification(session);
+    } catch (error) {
+      console.error("Commerce notification failed", error);
+      return json({ error: "Commerce notification failed." }, 500);
+    }
   }
   if (event.type === "checkout.session.expired" && session?.metadata?.purpose === "care_booking_reservation") {
     await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(session.metadata.booking_id)}`, {

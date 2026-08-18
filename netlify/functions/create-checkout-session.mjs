@@ -115,6 +115,8 @@ export default async (request) => {
   });
   stripeBody.set("metadata[membership_tier]", membershipTier);
   stripeBody.set("metadata[discount_percent]", String(discountPercent));
+  stripeBody.set("metadata[purpose]", "product_order");
+  stripeBody.set("metadata[order_summary]", [...quantities.entries()].map(([name, quantity]) => `${quantity}x ${name}`).join(", ").slice(0, 500));
   if (authenticatedUser?.email) stripeBody.set("customer_email", authenticatedUser.email);
   if (authenticatedUser?.id) stripeBody.set("metadata[supabase_user_id]", authenticatedUser.id);
   if (redeemPoints) stripeBody.set("metadata[reward_points]", String(redeemPoints));

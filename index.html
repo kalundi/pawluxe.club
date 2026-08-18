@@ -257,7 +257,7 @@ saveProfile=async function(){
     if(photoUpdate.error){await pawluxeSupabase.storage.from('pet-photos').remove([path]);showToast(photoUpdate.error.message||'The photo reference could not be saved.');return}
     if(current?.photo_path&&current.photo_path!==path)await pawluxeSupabase.storage.from('pet-photos').remove([current.photo_path]);
   }
-  activePetId=result.data.id;document.getElementById('profilePhoto').value='';await loadMemberPets();await persistInterestEvent('content_view','pet_profile_saved',{has_photo:Boolean(file||current?.photo_path),photo_consent:photoConsent},activePetId);showToast('Pet profile saved securely')
+  activePetId=result.data.id;document.getElementById('profilePhoto').value='';await loadMemberPets();await persistInterestEvent('content_view','pet_profile_saved',{has_photo:Boolean(file||current?.photo_path),photo_consent:photoConsent},activePetId);fetch('/api/member-change-notification',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+pawluxeSession.access_token},body:JSON.stringify({type:'pet_profile_saved',petName:name})}).catch(error=>console.warn('Profile notification unavailable',error));showToast('Pet profile saved securely; confirmation is being sent')
 };
 let memberCalendarEvents=[];
 let memberCalendarView='month';
