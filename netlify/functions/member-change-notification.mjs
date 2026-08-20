@@ -74,6 +74,34 @@ export default async (request) => {
       customerAction: "Pawluxe received the record for review. A booking is not approved for service until the record is confirmed.",
       sms: `Pawluxe safety update: ${petName}'s record was submitted by ${user.email}. Review and confirm before service.`,
     },
+    home_zip_updated: {
+      ownerSubject: `Member location updated — ${user.email}`,
+      customerSubject: `Your Pawluxe home location was updated`,
+      ownerAction: "The member's home ZIP changed. Use the latest account location for service coverage and local resources.",
+      customerAction: "Your home ZIP is saved and will be used for local Pawluxe services and resources.",
+      sms: `Pawluxe account update: ${user.email} changed their home ZIP.`,
+    },
+    pet_removed: {
+      ownerSubject: `Pet removed from member account — ${petName}`,
+      customerSubject: `${petName} was removed from your Pawluxe account`,
+      ownerAction: "The pet was soft-deleted. Its private history remains available for recovery or audit.",
+      customerAction: "The pet is no longer shown in your account. Contact Pawluxe if this was a mistake.",
+      sms: `Pawluxe account update: ${petName} was removed by ${user.email}.`,
+    },
+    adoption_requested: {
+      ownerSubject: `Adoption placement requested — ${petName}`,
+      customerSubject: `${petName}'s private placement request was received`,
+      ownerAction: "Review the private placement request and nearby organization candidates before any referral or publication.",
+      customerAction: "Pawluxe received the private placement request. The pet has not been published or transferred.",
+      sms: `Pawluxe adoption request: ${user.email} requested placement help for ${petName}. Review required.`,
+    },
+    vet_records_requested: {
+      ownerSubject: `Veterinary records requested — ${petName}`,
+      customerSubject: `${petName}'s veterinary-record request was received`,
+      ownerAction: "Contact the selected clinic or connect its supported records provider. Do not mark records received until the source is verified.",
+      customerAction: "Pawluxe recorded your authorization request. Retrieval depends on the selected clinic's records process or supported software.",
+      sms: `Pawluxe vet records: ${user.email} requested records access for ${petName}. Clinic follow-up required.`,
+    },
   };
   const notice = allowed[type];
   if (!notice) return json({ error: "Unsupported notification type." }, 400);
