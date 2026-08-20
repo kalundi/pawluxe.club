@@ -87,7 +87,10 @@ export default async (request) => {
       `<h2>Update received</h2><p>Thank you. ${escapeHtml(notice.customerAction)}</p><p><strong>Pet:</strong> ${safePet}</p><p>Need help or need to make a correction? Reply to this email or call <a href="tel:+13015007946">301-500-7946</a>.</p>`),
     sendOwnerSms(notice.sms),
   ]);
-  return json({ notified: results.some(Boolean) });
+  return json({
+    notified: results.some(Boolean),
+    channels: { ownerEmail: results[0], customerEmail: results[1], ownerSms: results[2] },
+  });
 };
 
 export const config = { path: "/api/member-change-notification" };
