@@ -1,0 +1,68 @@
+/* Pawluxe Club — Best Sellers strip (brand-matched, standalone) */
+#bestSellers .bsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+#bestSellers .bsCard {
+  position: relative;
+  display: block;
+  background: #fffdf9;
+  border: 1px solid #eadfd2;
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  color: #2a211d;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+#bestSellers .bsCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(47, 31, 24, .12);
+}
+#bestSellers .bsCard img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: #f4ead9;
+}
+#bestSellers .bsRank {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #b98145;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  letter-spacing: .02em;
+}
+#bestSellers .bsSold {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #2e6f3e;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+#bestSellers .bsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px 14px;
+}
+#bestSellers .bsName {
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+#bestSellers .bsPrice {
+  font-size: 16px;
+  font-weight: 800;
+  color: #b98145;
+}
