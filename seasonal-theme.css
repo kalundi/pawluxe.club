@@ -116,3 +116,41 @@
     font-size: 0.85rem;
   }
 }
+
+/* ---- Christmas color treatment: the site's own colors shift for the season ---- */
+
+html.xmas-on {
+  --gold: #a31621;
+  --gold2: #2e6f3e;
+  --cream: #fdf6ea;
+  --sand: #f6e7d2;
+  --line: #ecd9bd;
+}
+
+html.xmas-on .topbar {
+  background: rgba(30, 77, 51, 0.97);
+  border-bottom: 3px solid #a31621;
+}
+
+html.xmas-on .topbar .brand,
+html.xmas-on .nav a {
+  color: #fff7ea;
+}
+
+html.xmas-on .nav a:hover {
+  background: rgba(255, 247, 234, 0.14);
+}
+
+html.xmas-on .nav .cta {
+  background: #a31621;
+  color: #fff7ea;
+}
+
+html.xmas-on .footer {
+  background: linear-gradient(160deg, #7c1d24 0%, #3d0f14 100%);
+}
+
+html.xmas-on ::selection {
+  background: #a31621;
+  color: #fff7ea;
+}
