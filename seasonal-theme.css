@@ -1,0 +1,118 @@
+/* Pawluxe Club — Christmas theme.
+   Activated by seasonal-theme.js (adds html.xmas-on) through Dec 31, 2026 only.
+   Palette harmonizes with the Pawluxe brand: espresso, caramel gold, cream,
+   plus cranberry red and the brand evergreen. */
+
+.xmas-banner {
+  position: relative;
+  background: linear-gradient(90deg, #3d0f14 0%, #7c1d24 50%, #274d33 100%);
+  color: #fff7ea;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 15px;
+  font-family: inherit;
+}
+
+.xmas-banner::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    #a31621 0 16px,
+    #e8bd82 16px 32px,
+    #2e6f3e 32px 48px,
+    #fff7ea 48px 64px
+  );
+}
+
+.xmas-banner-text {
+  margin: 0 auto;
+  text-align: center;
+  flex: 1 1 auto;
+  line-height: 1.35;
+}
+
+.xmas-banner-title {
+  display: block;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+
+.xmas-banner-sub {
+  display: block;
+  margin-top: 2px;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.xmas-banner a {
+  color: #e8bd82;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.xmas-banner a:focus-visible {
+  outline: 3px solid #e8bd82;
+  outline-offset: 2px;
+}
+
+.xmas-banner-close {
+  background: transparent;
+  border: 2px solid rgba(255, 247, 234, 0.65);
+  color: #fff7ea;
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  flex: 0 0 auto;
+  padding: 0;
+}
+
+.xmas-banner-close:hover {
+  background: rgba(255, 247, 234, 0.16);
+}
+
+.xmas-banner-close:focus-visible {
+  outline: 3px solid #e8bd82;
+  outline-offset: 2px;
+}
+
+#xmas-snow {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3000;
+}
+
+.xmas-footer-note {
+  text-align: center;
+  font-weight: 700;
+  color: #e8bd82;
+  padding: 12px 16px 2px;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .xmas-banner {
+    padding: 8px 10px 13px;
+    gap: 8px;
+  }
+  .xmas-banner-title {
+    font-size: 0.98rem;
+  }
+  .xmas-banner-sub {
+    font-size: 0.85rem;
+  }
+}
