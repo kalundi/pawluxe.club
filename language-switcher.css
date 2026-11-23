@@ -45,6 +45,54 @@
   }
 }
 
+/* --- Mobile header fit (<=640px) ---
+   With the switcher added, the single-row header is wider than a phone
+   screen and the CTA was pushed off the right edge. On small screens the
+   header wraps instead: brand on the first row, nav controls (cart/chip,
+   language switcher, CTA) on a full-width second row. Desktop is untouched. */
+@media (max-width: 640px) {
+  /* Slightly tighter pill */
+  .lang-switcher {
+    padding: 2px;
+    margin-right: 0;
+  }
+  .lang-switcher .lang-btn {
+    padding: 6px 7px;
+    font-size: 12px;
+  }
+
+  /* index + pet-safety: .navwrap holds the brand and .nav side by side —
+     give .nav its own full-width row under the brand. */
+  .topbar .navwrap {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .topbar .navwrap .nav {
+    flex: 1 1 100%;
+  }
+
+  /* blog + newsletter: .nav is the header container itself — put the
+     brand on its own row and trim the side padding. */
+  .topbar > .nav {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .topbar > .nav .brand {
+    flex: 1 1 100%;
+  }
+
+  /* All pages: nav items wrap rather than overflow, CTA hugs the right. */
+  .topbar .nav {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .topbar .nav .cta {
+    margin-left: auto;
+  }
+}
+
 /* --- Hide Google Translate chrome (banner, branding, gadget) --- */
 .goog-te-banner-frame,
 .goog-te-banner-frame.skiptranslate,
