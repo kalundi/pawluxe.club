@@ -1,0 +1,80 @@
+/* Pawluxe Club — site-wide language switcher (English / Español / Français)
+   Powered by the Google Translate element; selection persists via the
+   googtrans cookie across all pages. */
+
+/* --- Switcher in the header nav --- */
+.lang-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  margin-right: 4px;
+  background: #fff;
+  border: 1px solid rgba(185, 129, 69, .35);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.lang-switcher .lang-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ink, #2f1f18);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 7px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.lang-switcher .lang-btn:hover {
+  background: rgba(185, 129, 69, .14);
+}
+.lang-switcher .lang-btn:focus-visible {
+  outline: 2px solid var(--ink, #2f1f18);
+  outline-offset: 2px;
+}
+.lang-switcher .lang-btn.is-active {
+  background: var(--espresso, var(--ink, #2f1f18));
+  color: #fff;
+}
+@media (max-width: 760px) {
+  .lang-switcher .lang-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}
+
+/* --- Hide Google Translate chrome (banner, branding, gadget) --- */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+}
+body {
+  top: 0 !important;
+}
+.goog-te-balloon-frame {
+  display: none !important;
+}
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+/* Keep the widget itself functional but off-screen: our own buttons drive it. */
+#google_translate_element {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+#google_translate_element .goog-te-gadget {
+  font-size: 0;
+  color: transparent;
+}
+#google_translate_element .goog-te-gadget img {
+  display: none;
+}
