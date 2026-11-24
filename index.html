@@ -574,6 +574,113 @@ window.addEventListener('DOMContentLoaded',refreshPawluxeAuth);
   else window.addEventListener('load',activateEcwid,{once:true});
 })();
 </script>
+<style>
+#pawluxeBulkSavings{display:none;max-width:760px;margin:14px auto;padding:14px 18px;background:#fbf5ec;border:1px solid #d7b07b;border-left:5px solid #b98145;border-radius:14px;color:#2f1f18;font-weight:800;text-align:center;line-height:1.45}
+#pawluxeBulkSavings.show{display:block}
+#pawluxeBulkSavings .pbsAmount{color:#b98145;font-weight:900}
+</style>
+<script>
+(function pawluxeBulkSavings(){
+  // Verified Ecwid bulk-pricing tiers (Christmas Tree Pet Toy ladder confirmed in a live
+  // storefront cart test, Nov 19, 2026). Keyed by Ecwid product id; each tier lists the
+  // minimum quantity and the % off the base price from that quantity up.
+  // Products not listed here have no verified bulk tiers and contribute $0 savings.
+  var BULK_TIERS={
+    878568993:{name:'Christmas Tree Pet Toy',tiers:[{minQty:10,pctOff:10},{minQty:20,pctOff:20},{minQty:30,pctOff:30}]}
+  };
+  function round2(n){return Math.round(n*100)/100}
+  function tierFor(entry,qty){
+    if(!entry||!entry.tiers)return null;
+    var best=null;
+    for(var i=0;i<entry.tiers.length;i++){if(qty>=entry.tiers[i].minQty)best=entry.tiers[i]}
+    return best;
+  }
+  function computeSavings(cart){
+    var total=0;
+    try{
+      var items=(cart&&cart.items)||[];
+      for(var i=0;i<items.length;i++){
+        var item=items[i]||{};
+        var product=item.product||{};
+        var id=Number(product.id||item.productId||0);
+        var base=Number(product.price);
+        var qty=Number(item.quantity||0);
+        if(!id||!(base>0)||!(qty>0))continue;
+        var tier=tierFor(BULK_TIERS[id],qty);
+        if(!tier)continue;
+        var tierUnit=round2(base*(1-tier.pctOff/100));
+        total+=round2((base-tierUnit)*qty);
+      }
+    }catch(e){return 0}
+    return round2(total);
+  }
+  // Exposed so the tier table and math can be checked/updated without touching the render code.
+  window.PawluxeBulkSavings={tiers:BULK_TIERS,compute:computeSavings};
+
+  var BANNER_ID='pawluxeBulkSavings';
+  var lastSavings=0;
+
+  function bannerEl(){return document.getElementById(BANNER_ID)}
+  function findAnchor(){
+    // Prefer the cart totals/footer area; fall back to the top of the cart container.
+    var beforeSelectors=['.ec-cart__footer','.ec-cart-summary','.ecwid-cart-total','.ec-cart__totals','[class*="cart-summary"]','[class*="CartSummary"]'];
+    var containerSelectors=['.ec-cart','.ecwid-cart','[class*="ec-cart"]'];
+    var i,el;
+    for(i=0;i<beforeSelectors.length;i++){el=document.querySelector(beforeSelectors[i]);if(el&&el.parentNode)return{el:el,where:'before'}}
+    for(i=0;i<containerSelectors.length;i++){el=document.querySelector(containerSelectors[i]);if(el)return{el:el,where:'prepend'}}
+    return null;
+  }
+  function ensureBanner(){
+    var existing=bannerEl();
+    if(existing&&document.contains(existing))return existing;
+    var anchor=findAnchor();
+    if(!anchor)return null;
+    var div=document.createElement('div');
+    div.id=BANNER_ID;
+    div.setAttribute('role','status');
+    if(anchor.where==='before')anchor.el.parentNode.insertBefore(div,anchor.el);
+    else anchor.el.insertBefore(div,anchor.el.firstChild);
+    return div;
+  }
+  function render(){
+    try{
+      if(!(lastSavings>0)){var b=bannerEl();if(b)b.classList.remove('show');return}
+      var banner=ensureBanner();
+      if(!banner)return; // no cart surface in the DOM right now - fail silently
+      banner.innerHTML='You&rsquo;re saving <span class="pbsAmount">$'+lastSavings.toFixed(2)+'</span> with bulk pricing on this order';
+      banner.classList.add('show');
+    }catch(e){/* never break the store */}
+  }
+  function refresh(cart){
+    try{
+      if(cart){lastSavings=computeSavings(cart);render();return}
+      if(window.Ecwid&&Ecwid.Cart&&Ecwid.Cart.get)Ecwid.Cart.get(function(c){lastSavings=computeSavings(c);render()});
+    }catch(e){}
+  }
+  function activate(){
+    if(!window.Ecwid)return;
+    try{
+      if(Ecwid.OnCartChanged)Ecwid.OnCartChanged.add(function(cart){refresh(cart)});
+      if(Ecwid.OnPageLoaded)Ecwid.OnPageLoaded.add(function(page){
+        if(page&&(page.type==='CART'||page.type==='CHECKOUT'))refresh();
+        else{var b=bannerEl();if(b)b.classList.remove('show')}
+      });
+      // Ecwid re-renders its pages in place; if the banner gets wiped, put it back.
+      if(window.MutationObserver&&document.body){
+        var pending=false;
+        var observer=new MutationObserver(function(){
+          if(pending)return;pending=true;
+          setTimeout(function(){pending=false;if(lastSavings>0&&!bannerEl())render()},250);
+        });
+        observer.observe(document.body,{childList:true,subtree:true});
+      }
+      refresh();
+    }catch(e){}
+  }
+  if(window.Ecwid&&Ecwid.OnAPILoaded)Ecwid.OnAPILoaded.add(activate);
+  else window.addEventListener('load',activate,{once:true});
+})();
+</script>
 <script>
 (()=>{
   const rotator=document.getElementById('petHeroRotator');
