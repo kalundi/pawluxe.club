@@ -1,0 +1,78 @@
+/* Pawluxe Club — Luxury Collections (brand-matched to Best Sellers) */
+#luxuryCollections .colBlock {
+  margin-top: 28px;
+}
+#luxuryCollections .colHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+#luxuryCollections .colHead h3 {
+  margin: 0;
+  font-size: 22px;
+}
+#luxuryCollections .colTag {
+  background: #f7e3ea;
+  color: #a34a68;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+#luxuryCollections .colGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+#luxuryCollections .colCard {
+  position: relative;
+  display: block;
+  background: #fffdf9;
+  border: 1px solid #eadfd2;
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  color: #2a211d;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+#luxuryCollections .colCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(47, 31, 24, .12);
+}
+#luxuryCollections .colCard img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: #f4ead9;
+}
+#luxuryCollections .colBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px 14px;
+}
+#luxuryCollections .colName {
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+#luxuryCollections .colPrice {
+  font-size: 16px;
+  font-weight: 800;
+  color: #b98145;
+}
+#luxuryCollections .colReason {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #7a6a5f;
+}
+#luxuryCollections .colNote {
+  margin-top: 14px;
+  font-size: 14px;
+  color: #7a6a5f;
+}
