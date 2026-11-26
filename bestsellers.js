@@ -1,21 +1,34 @@
 /* Pawluxe Club — Best Sellers strip.
    Renders the top products from /bestsellers.json, which is re-ranked from
    real Ecwid orders by a weekly order check. Clicking a card opens the
-   product in the on-page Ecwid shop when available. */
+   product in the on-page Ecwid shop on pawluxe.club. Cards NEVER navigate
+   to the Ecwid storefront (store140961751.company.site): the click is
+   always intercepted, and if the Ecwid embed is still loading we wait for
+   it; if it never loads, the shopper simply stays on pawluxe.club. */
 (function () {
   var grid = document.getElementById('bestSellersGrid');
   if (!grid) return;
 
   function money(n) { return '$' + Number(n).toFixed(2); }
 
-  function openProduct(id, url, ev) {
-    if (window.Ecwid && typeof window.Ecwid.openPage === 'function') {
-      ev.preventDefault();
-      window.Ecwid.openPage('product', { id: id });
-      var shop = document.getElementById('shop');
-      if (shop) shop.scrollIntoView({ behavior: 'smooth' });
-    }
-    /* otherwise the href (storefront product page) takes over */
+  function scrollToShop() {
+    var shop = document.getElementById('shop');
+    if (shop) shop.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function openProduct(id, ev) {
+    ev.preventDefault();
+    scrollToShop();
+    var tries = 0;
+    (function attempt() {
+      if (window.Ecwid && typeof window.Ecwid.openPage === 'function') {
+        try { window.Ecwid.openPage('product', { id: id }); } catch (e) { /* stay on pawluxe.club */ }
+        return;
+      }
+      tries++;
+      if (tries <= 40) setTimeout(attempt, 250); /* wait up to ~10s for the embed */
+      /* Ecwid never loaded: leave the shopper on pawluxe.club at #shop. */
+    })();
   }
 
   fetch('/bestsellers.json', { cache: 'no-store' })
@@ -30,9 +43,10 @@
       items.forEach(function (p, i) {
         var a = document.createElement('a');
         a.className = 'bsCard';
-        a.href = p.url;
+        a.href = '#shop'; /* on-site only — never the company.site storefront */
+        a.setAttribute('data-product-id', p.id);
         a.setAttribute('aria-label', p.name + ' — ' + money(p.price));
-        a.addEventListener('click', function (ev) { openProduct(p.id, p.url, ev); });
+        a.addEventListener('click', function (ev) { openProduct(p.id, ev); });
 
         var rank = document.createElement('span');
         rank.className = 'bsRank';
