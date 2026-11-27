@@ -1,0 +1,73 @@
+/* Pawluxe Club — Gift Boxes (brand-matched to Luxury Collections) */
+#giftBoxes .gbOffer {
+  max-width: 760px;
+  margin: 0 auto 26px;
+  text-align: center;
+  background: #f6e7d2;
+  border: 1px solid #eadfd2;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-weight: 800;
+  color: #2f1f18;
+}
+#giftBoxes .gbOffer strong {
+  color: #b98145;
+}
+#giftBoxes .gbGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+#giftBoxes .gbCard {
+  display: flex;
+  flex-direction: column;
+  background: #fffdf9;
+  border: 1px solid #eadfd2;
+  border-radius: 18px;
+  overflow: hidden;
+  color: #2a211d;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+#giftBoxes .gbCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(47, 31, 24, .12);
+}
+#giftBoxes .gbCard img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: #f4ead9;
+}
+#giftBoxes .gbBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 16px;
+  flex: 1;
+}
+#giftBoxes .gbName {
+  font-family: Georgia, serif;
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+#giftBoxes .gbContents {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #7a6a5f;
+}
+#giftBoxes .gbPrice {
+  font-size: 19px;
+  font-weight: 800;
+  color: #b98145;
+}
+#giftBoxes .gbNote {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #7a6a5f;
+}
+#giftBoxes .gbBtn {
+  margin-top: auto;
+  width: 100%;
+}
