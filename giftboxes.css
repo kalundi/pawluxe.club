@@ -32,7 +32,8 @@
   transform: translateY(-3px);
   box-shadow: 0 14px 30px rgba(47, 31, 24, .12);
 }
-#giftBoxes .gbCard img {
+#giftBoxes .gbCard img,
+#giftBoxes .gbCard video {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
