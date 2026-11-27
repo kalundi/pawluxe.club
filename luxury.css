@@ -1,0 +1,195 @@
+/* Pawluxe Club — Luxury Polish layer (Nov 27, 2026)
+   Visual layer only: one button system, display-serif headlines, airier
+   spacing, deepened espresso, bronze accents, announcement bar, monogram,
+   gentle reveal motion. Loads last on every page so it unifies the sections
+   without touching content, links, prices or flows.
+   Layers with seasonal-theme.css: the Christmas theme's html.xmas-on rules
+   for the topbar / nav CTA carry higher specificity and still win in season. */
+
+:root {
+  --espresso: #251711; /* deepened toward near-black (was #2f1f18) */
+  --lux-espresso: #231510;
+  --lux-gold: #b98145;
+  --lux-gold-2: #d7b07b;
+  --lux-cream: #fbf7f2;
+  --lux-serif: "Cormorant Garamond", Georgia, serif;
+}
+
+/* ---------- Announcement bar ---------- */
+.luxBar {
+  background: var(--lux-espresso);
+  color: #f3e7d7;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  line-height: 1.6;
+  padding: 9px 14px;
+}
+.luxBar a {
+  color: var(--lux-gold-2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.luxBar a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.luxBar .luxDot { color: var(--lux-gold); margin: 0 .9em; }
+@media (max-width: 640px) {
+  .luxBar { font-size: 10px; letter-spacing: .13em; padding: 8px 10px; }
+}
+
+/* ---------- Monogram ---------- */
+.luxMono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55em;
+  height: 1.55em;
+  margin-right: .45em;
+  border: 1px solid var(--lux-gold);
+  border-radius: 50%;
+  font-family: var(--lux-serif);
+  font-weight: 600;
+  font-size: .8em;
+  line-height: 1;
+  color: var(--lux-gold);
+  vertical-align: middle;
+  transform: translateY(-.05em);
+}
+.footerBrand .luxMono {
+  border-color: var(--lux-gold-2);
+  color: var(--lux-gold-2);
+}
+
+/* ---------- Typography ---------- */
+body h1, body h2, body h3 {
+  font-family: var(--lux-serif);
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+body h1 { line-height: 1.02; }
+body h2 { line-height: 1.08; }
+main h1, main h2 { color: var(--lux-espresso); }
+body .brand, body .footerBrand {
+  font-family: var(--lux-serif);
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+body { line-height: 1.65; }
+main p { line-height: 1.75; }
+body .sectionHead p { max-width: 640px; }
+#giftBoxes .gbName { font-family: var(--lux-serif); font-weight: 600; }
+
+/* Eyebrows: wide-tracked uppercase bronze on every page */
+body .eyebrow {
+  color: var(--lux-gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .34em;
+  text-transform: uppercase;
+}
+
+/* ---------- Spacing & hairline dividers ---------- */
+body .section {
+  padding-top: 104px;
+  padding-bottom: 104px;
+  border-top: 1px solid rgba(185, 129, 69, .16);
+}
+@media (max-width: 760px) {
+  body .section { padding-top: 64px; padding-bottom: 64px; }
+}
+
+/* ---------- One button system ----------
+   Primary: espresso pill, bronze hairline border, letterspaced uppercase,
+   subtle gold sheen sweep on hover.
+   Secondary: ghost — transparent, bronze border, espresso text. */
+body .btn, body .button, body .loginSubmit {
+  position: relative;
+  overflow: hidden;
+  background: var(--lux-espresso);
+  color: #fdf9f2;
+  border: 1px solid var(--lux-gold);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(215, 176, 123, .28), 0 10px 24px rgba(35, 21, 16, .16);
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  font-size: 12.5px;
+  font-weight: 700;
+  transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease, color .25s ease;
+}
+body .btn::after, body .button::after, body .loginSubmit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(215, 176, 123, .38) 50%, transparent 70%);
+  transform: translateX(-130%);
+  transition: transform .6s ease;
+  pointer-events: none;
+}
+body .btn:hover, body .button:hover, body .loginSubmit:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px rgba(215, 176, 123, .4), 0 16px 32px rgba(35, 21, 16, .22);
+}
+body .btn:hover::after, body .button:hover::after, body .loginSubmit:hover::after {
+  transform: translateX(130%);
+}
+/* Bronze variant keeps its warmth, brought into the same system */
+body .btn.gold {
+  background: linear-gradient(160deg, #c99a5b, var(--lux-gold));
+  border-color: #a06c33;
+  color: #fff;
+}
+/* Ghost / secondary */
+body .btn.light, body .button.secondary, body .miniBtn {
+  background: rgba(251, 247, 242, .55);
+  color: var(--lux-espresso);
+  border: 1px solid var(--lux-gold);
+  box-shadow: none;
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+body .btn.light::after, body .button.secondary::after, body .miniBtn::after { content: none; }
+body .btn.light:hover, body .button.secondary:hover, body .miniBtn:hover {
+  background: var(--lux-espresso);
+  color: #fdf9f2;
+  transform: translateY(-2px);
+}
+/* Nav CTA joins the system (background left to page/season rules) */
+.topbar .cta {
+  border: 1px solid var(--lux-gold);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(215, 176, 123, .25);
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+body .btn:focus-visible, body .button:focus-visible, body .miniBtn:focus-visible,
+body .loginSubmit:focus-visible, .topbar .cta:focus-visible {
+  outline: 2px solid var(--lux-gold);
+  outline-offset: 2px;
+}
+
+/* ---------- Card hover lift ---------- */
+#bestSellers .bsCard:hover, #luxuryCollections .colCard:hover, #giftBoxes .gbCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 44px rgba(35, 21, 16, .16);
+}
+body .card { transition: transform .3s ease, box-shadow .3s ease; }
+body .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 44px rgba(35, 21, 16, .16);
+}
+
+/* ---------- Gentle fade-in on scroll (JS adds .luxReveal) ---------- */
+.luxReveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .8s ease, transform .8s ease;
+}
+.luxReveal.luxIn { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .luxReveal { opacity: 1; transform: none; transition: none; }
+}
