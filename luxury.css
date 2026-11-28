@@ -193,3 +193,10 @@ body .card:hover {
 @media (prefers-reduced-motion: reduce) {
   .luxReveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* ---------- Official Pawluxe logo ---------- */
+.brandLogo{height:44px;width:auto;display:block}
+.brandLogoFooter{height:38px}
+
+
+
